@@ -165,8 +165,28 @@ namespace plugin_mt_framework.Text
 
         public byte[] Write(ProcessedText text, Encoding encoding)
         {
-            // TODO
-            return Array.Empty<byte>();
+            var sb = new StringBuilder();
+            foreach (var element in text.Elements)
+            {
+                if (element.IsString)
+                {
+                    sb.Append(element.GetText());
+                }
+                else
+                {
+                    var code = element.GetControlCode();
+                    sb.Append('<');
+                    sb.Append(code.Name);
+
+                    if (code.Arguments.Length > 0)
+                    {
+                        sb.Append(' ');
+                        sb.AppendJoin(' ', code.Arguments);
+                    }
+                    sb.Append('>');
+                }
+            }
+            return encoding.GetBytes(sb.ToString());
         }
 
         private bool IsControlCode(string text, int index)

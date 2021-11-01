@@ -11,7 +11,6 @@ using Kontract.Models.IO;
 
 namespace plugin_mt_framework.Text
 {
-#if DEBUG
 
     public class GmdPlugin : IFilePlugin, IIdentifyFiles
     {
@@ -41,5 +40,4 @@ namespace plugin_mt_framework.Text
         }
     }
 
-#endif
 }
