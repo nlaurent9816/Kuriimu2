@@ -19,7 +19,7 @@ namespace Kuriimu2.Cmd.Contexts
         private readonly BatchExtractor _batchExtractor;
         private readonly BatchInjector _batchInjector;
 
-        public ExtensionContext(IInternalFileManager pluginManager, IContext parentContext, IProgressContext progressContext) :
+        public ExtensionContext(IFileManager pluginManager, IContext parentContext, IProgressContext progressContext) :
             base(progressContext)
         {
             ContractAssertions.IsNotNull(pluginManager, nameof(pluginManager));
@@ -80,7 +80,7 @@ namespace Kuriimu2.Cmd.Contexts
             var destinationFileSystem = FileSystemFactory.CreateSubFileSystem(outputDirectory.FullName, new StreamManager());
 
             _batchExtractor.ScanSubDirectories = true;
-            _batchExtractor.PluginId = pluginId;
+            //_batchExtractor.PluginId = pluginId;
             await _batchExtractor.Process(sourceFileSystem, destinationFileSystem);
         }
 
@@ -93,7 +93,7 @@ namespace Kuriimu2.Cmd.Contexts
             var destinationFileSystem = FileSystemFactory.CreateSubFileSystem(outputDirectory.FullName, new StreamManager());
 
             _batchInjector.ScanSubDirectories = true;
-            _batchInjector.PluginId = pluginId;
+            //_batchInjector.PluginId = pluginId;
             await _batchInjector.Process(sourceFileSystem, destinationFileSystem);
         }
 
