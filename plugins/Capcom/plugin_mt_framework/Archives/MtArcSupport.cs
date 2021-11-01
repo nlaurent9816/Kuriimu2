@@ -336,7 +336,7 @@ namespace plugin_mt_framework.Archives
 
         private static uint GetHash(string input)
         {
-            return ~Hash.ComputeValue(input);
+            return ~Hash.ComputeValue(input) & 0x80000000;
         }
 
         private static Dictionary<uint, string> _extensionMap = new Dictionary<uint, string>

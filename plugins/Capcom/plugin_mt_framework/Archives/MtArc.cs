@@ -219,7 +219,9 @@ namespace plugin_mt_framework.Archives
                 file.Entry.Offset = filePosition;
                 file.Entry.SetDecompressedSize((int)file.FileSize, _platform);
                 file.Entry.CompSize = (int)writtenSize;
-                file.Entry.FileName = file.FilePath.FullName;
+                file.Entry.FileName = ProcessFileName(file.FilePath);   
+                file.Entry.ExtensionHash = ComputeExtensionHash(file.FilePath.GetExtensionWithDot());
+
                 entries.Add(file.Entry);
 
                 filePosition += (int)writtenSize;
@@ -235,6 +237,34 @@ namespace plugin_mt_framework.Archives
             output.Position = 0;
             bw.WriteType(_header);
         }
+
+        private String ProcessFileName(UPath path)
+        {
+            var fileName = path.ToRelative().FullName.Replace('/', '\\');
+            return fileName.Substring(0, fileName.LastIndexOf('.'));
+        }
+
+        private uint ComputeExtensionHash(String extension)
+        {
+            try
+            {
+                // Check in the known extension map
+                return MtArcSupport.DetermineExtensionHash(extension);
+            }
+            catch (InvalidOperationException)
+            {
+                try
+                {
+                    // Unknown extension, but maybe the extension is directly the hash
+                    return Convert.ToUInt32(extension[1..], 16);
+                }
+                catch (Exception)
+                {
+                    throw new InvalidOperationException($"Unable to guess the correct hash for extension ${extension}.");
+                }
+            }
+        }
+
 
         private void SaveBigEndian(Stream output, IList<IArchiveFileInfo> files)
         {
@@ -256,7 +286,8 @@ namespace plugin_mt_framework.Archives
                 file.Entry.Offset = filePosition;
                 file.Entry.SetDecompressedSize((int)file.FileSize, _platform);
                 file.Entry.CompSize = (int)writtenSize;
-                file.Entry.FileName = file.FilePath.FullName;
+                file.Entry.FileName = ProcessFileName(file.FilePath);   
+                file.Entry.ExtensionHash = ComputeExtensionHash(file.FilePath.GetExtensionWithDot());
                 entries.Add(file.Entry);
 
                 filePosition += (int)writtenSize;
@@ -293,7 +324,8 @@ namespace plugin_mt_framework.Archives
                 file.Entry.Offset = filePosition;
                 file.Entry.SetDecompressedSize((int)file.FileSize, _platform);
                 file.Entry.CompSize = (int)writtenSize;
-                file.Entry.FileName = file.FilePath.FullName;
+                file.Entry.FileName = ProcessFileName(file.FilePath);   
+                file.Entry.ExtensionHash = ComputeExtensionHash(file.FilePath.GetExtensionWithDot());
                 entries.Add(file.Entry);
 
                 filePosition += (int)writtenSize;
