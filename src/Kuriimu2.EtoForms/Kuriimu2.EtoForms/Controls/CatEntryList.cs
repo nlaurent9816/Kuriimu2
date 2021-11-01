@@ -13,8 +13,8 @@ namespace Kuriimu2.EtoForms.Controls
         private readonly TableLayout _layout;
         private readonly ITextState _textState;
 
-        private readonly IList<(TextEntry, ProcessedText, Label)> _sourceTexts;
-        private readonly IList<(TextEntry, ProcessedText, Label)> _targetTexts;
+        private readonly IList<(TextEntry, ProcessedText, int, Label)> _sourceTexts;
+        private readonly IList<(int, ProcessedText, int, Label)> _targetTexts;
         private readonly IList<(Label, Label)> _labelPairs;
 
         private int _selectedEntryIndex = -1;
@@ -34,8 +34,8 @@ namespace Kuriimu2.EtoForms.Controls
             _layout = new TableLayout();
             _textState = textTextState;
 
-            _sourceTexts = new List<(TextEntry, ProcessedText, Label)>();
-            _targetTexts = new List<(TextEntry, ProcessedText, Label)>();
+            _sourceTexts = new List<(TextEntry, ProcessedText, int, Label)>();
+            _targetTexts = new List<(int, ProcessedText, int, Label)>();
             _labelPairs = new List<(Label, Label)>();
 
             Content = _layout;
@@ -56,10 +56,10 @@ namespace Kuriimu2.EtoForms.Controls
 
         public void SetText(int index, ProcessedText processedText)
         {
-            _targetTexts[index] = (_targetTexts[index].Item1, processedText, _targetTexts[index].Item3);
+            _targetTexts[index] = (_targetTexts[index].Item1, processedText, _targetTexts[index].Item3, _targetTexts[index].Item4);
 
             // Update UI with new text
-            _targetTexts[index].Item3.Text = processedText.Serialize();
+            _targetTexts[index].Item4.Text = processedText.Serialize();
         }
 
         #region Load entries
@@ -75,24 +75,25 @@ namespace Kuriimu2.EtoForms.Controls
             var controlWidth = GetControlWidth();
 
             var labelIndex = 0;
-            for (var i = 0; i < _textState.Texts.Count; i++)
+            for (var entryNumber = 0; entryNumber < _textState.Texts.Count; entryNumber++)
             {
-                var entry = _textState.Texts[i];
-                var name = string.IsNullOrEmpty(entry.Name) ? $"Entry {i}" : entry.Name;
+                var entry = _textState.Texts[entryNumber];
+                var name = string.IsNullOrEmpty(entry.Name) ? $"Entry {entryNumber}" : entry.Name;
 
                 // Add entry header
                 _layout.Rows.Add(new Label { Text = name });
 
                 // Add paged texts
                 var pagedText = entry.GetPagedText();
-                foreach (var page in pagedText)
+                for (var pageNumber = 0; pageNumber < pagedText.Count; pageNumber++)
                 {
+                    var page = pagedText[pageNumber];
                     var serializedText = page.Serialize();
                     var sourceLabel = new Label { Text = serializedText, Tag = labelIndex, BackgroundColor = GetBackgroundColor(labelIndex), Size = new Size(controlWidth / 2, 19) };
                     var targetLabel = new Label { Text = serializedText, Tag = labelIndex, BackgroundColor = GetBackgroundColor(labelIndex), Size = new Size(controlWidth / 2, 19) };
 
-                    _sourceTexts.Add((entry, page, sourceLabel));
-                    _targetTexts.Add((entry, page, targetLabel));
+                    _sourceTexts.Add((entry, page, pageNumber, sourceLabel));
+                    _targetTexts.Add((entryNumber, page, pageNumber, targetLabel));
                     _labelPairs.Add((sourceLabel, targetLabel));
 
                     sourceLabel.MouseUp += TextLabel_MouseUp;
@@ -141,7 +142,15 @@ namespace Kuriimu2.EtoForms.Controls
             {
                 _labelPairs[_selectedEntryIndex].Item1.BackgroundColor = GetBackgroundColor(_selectedEntryIndex);
                 _labelPairs[_selectedEntryIndex].Item2.BackgroundColor = GetBackgroundColor(_selectedEntryIndex);
-            }
+
+                var entryNumber = _targetTexts[_selectedEntryIndex].Item1;
+                var entryToModify = _textState.Texts[entryNumber];
+                var modifiedText = _targetTexts[_selectedEntryIndex].Item2;
+                var pageNumber = _targetTexts[_selectedEntryIndex].Item3;
+                var pagedText = entryToModify.GetPagedText();
+                pagedText[pageNumber] = modifiedText;
+                entryToModify.SetPagedText(pagedText);
+          }
 
             // Set background color for new selected entry
             var newEntryIndex = (int)(sender as Label).Tag;

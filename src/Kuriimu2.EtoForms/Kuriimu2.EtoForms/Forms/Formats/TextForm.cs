@@ -57,8 +57,9 @@ namespace Kuriimu2.EtoForms.Forms.Formats
 
         private void TargetText_TextChanged(object sender, EventArgs e)
         {
-            entryList.SetText(entryList.SelectedIndex, ProcessedText.Parse(targetText.Text));
-            withoutCodeLabel.Text = entryList.GetText(entryList.SelectedIndex).Serialize(false);
+            var processedText = ProcessedText.Parse(targetText.Text);
+            entryList.SetText(entryList.SelectedIndex, processedText);
+            withoutCodeLabel.Text = processedText.Serialize(false);
         }
 
         #endregion
